@@ -1,0 +1,149 @@
+---
+title: 'Übung 05: Spektrum einer Klaviersaite'
+author: "Tobias Blesgen und Leonardo Thome"
+date: "27.06.2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes: 
+ - \usepackage{amssymb}
+ - \usepackage{amsmath}
+ - \usepackage[ngerman]{babel}
+ - \bibliographystyle{unsrtnat}
+---
+
+[//]: # Ausführbefehl im allgemeinen: ``render("ComputerPhysik05.Rmd")``
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Schlägt man eine Klaviersaite an, so verhält sie sich nach:
+
+\begin{equation}
+      \frac{\partial^2\psi(x,t)}{\partial t^2} = c^2 \frac{\partial^2\psi(x,t)}{\partial x^2} - \frac{\gamma}{l}|\frac{\partial \psi (x,t)}{\partial t}|(\frac{\partial \psi (x,t)}{\partial t}).
+\end{equation}
+
+
+
+# Runge-Kutta 2 Verfahren
+
+merische Stabilität (soweit das System selbst stabil ist) und weist mit einem Verfahrensfehler von $\mathcal{O}(h^2)$ einen kleineren Fehler als das Eulerverfahren auf für kleine Schrittweiten h.
+
+# Implementation des DGS nach dem Runge-Kutta 2 Verfahren
+
+```{Rcpp}
+#include<Rcpp.h>
+#include<stdlib.h>
+#include<vector>
+#include<algorithm>
+
+using namespace Rcpp;
+
+// Wir verwenden Strukturen, um Funktionsargumente uebersichtlicher zu halten
+typedef struct
+{
+    double phi, r, theta, thetadot;
+} Status;
+
+typedef struct
+{
+    double epsilon,LM,ktheta;
+} Parameter;
+
+// Template zum Zerschneiden der verwendeten Vektoren
+template<typename T>
+std::vector<T> slice(std::vector<T> const &v, int m, int n)
+{
+    auto erste = v.cbegin() + m;
+    auto letzte = v.cbegin() + n + 1;
+ 
+    std::vector<T> vektor(erste, letzte);
+    return vektor;
+}
+
+// Berechnungsschritt der Ableitungen nach dem DGS
+void f(Status alterStatus, Parameter parameter, Status& neuerStatus){
+
+  neuerStatus.r = parameter.LM*(1-parameter.epsilon*parameter.epsilon)
+    *parameter.epsilon*sin(alterStatus.phi)/(alterStatus.r*alterStatus.r
+    *(1+parameter.epsilon*cos(alterStatus.phi))*(1+parameter.epsilon
+    *cos(alterStatus.phi)));
+                                                                                                                                               
+    neuerStatus.phi = parameter.LM/(alterStatus.r*alterStatus.r);
+    
+    neuerStatus.theta = alterStatus.thetadot;
+    
+    neuerStatus.thetadot = parameter.ktheta*sin(2*(alterStatus.theta
+      -alterStatus.phi))/(alterStatus.r*alterStatus.r*alterStatus.r);
+    
+}
+
+// Ein Intergrationsschritt nach Runge-Kutta
+void rkSchritt(Status& status, Parameter parameter, double h){
+    Status fStatus;                 // Standart Ableitung
+    f(status, parameter, fStatus);
+    
+    Status f2Status;                // Mischterm Ableitung
+    Status gemischt = {.phi=status.phi+h*fStatus.phi,.r = status.r+h*fStatus.r,
+                       .theta = status.theta + h*fStatus.theta,
+                       .thetadot = status.thetadot + h*fStatus.thetadot};
+    
+    f(gemischt, parameter, f2Status);
+    status.phi = status.phi + h/2*(fStatus.phi + f2Status.phi);
+    status.r = status.r+ h/2*(fStatus.r + f2Status.r);
+    status.theta = status.theta + h/2*(fStatus.theta + f2Status.theta);
+    status.thetadot = status.thetadot+h/2*(fStatus.thetadot+f2Status.thetadot);
+    }
+
+//[[Rcpp::export]]
+Rcpp::List durchlauf(const int maxSchritte, const double h,
+                            const double phi, const double r, const double theta,
+                            const double thetadot,const double epsilon,
+                            const double LM, const double ktheta){
+  // Arrays der Werte zur späteren Ausgabe
+    std::vector<double> phiWerte(maxSchritte);
+    std::vector<double> rWerte(maxSchritte);
+    std::vector<double> thetaWerte(maxSchritte);
+    std::vector<double> thetadotWerte(maxSchritte);
+    int k = 0;
+  // Quelltext
+  Status status = {.phi = phi, .r = r, .theta = theta,.thetadot = thetadot};
+  Parameter parameter = {.epsilon = epsilon,.LM = LM, .ktheta = ktheta};
+  // Schleife bis zur Abbruchsbedingung
+    for (int i = 0; i < maxSchritte; i++){
+      phiWerte[i] = status.phi;
+      rWerte[i] = status.r;
+      rkSchritt(status, parameter, h);
+      
+      // theta und thetadot Aufnahme nach jeder Umrundung
+      if(status.phi >= 2*3.14159*k){
+        k++;
+        thetaWerte[k] = status.theta;
+        thetadotWerte[k] = status.thetadot;
+      }
+    }
+    
+  // Rückgabe für eine grafische Wiedergabe
+    return List::create(Named("phi") = phiWerte,Named("r") = rWerte,
+                        Named("theta") = slice(thetaWerte,1,k-1),
+                        Named("thetadot") = slice(thetadotWerte,1,k-1));
+}
+
+```
+
+
+
+# Fazit
+Wir erhalten bei den meisten Werten ein nicht chaotisches Verhalten zwischen $\theta$ und $\dot \theta$, können jedoch auch chaotische Situationen konstruieren. Dies ist im physikalischen Sinne auch nachvollziehbar, da die Eigenrotation des Mondes durch geschickt gewählte Bahnen stark von der Radiusvariation beeinflusst werden kann.
+
+Wir können aber sehen, dass dieses Verhalten nicht immer eintritt und wir im Allgemeinen ein strukturiertes Verhalten vorfinden.
+
+
+\begin{thebibliography}{99}
+
+\bibitem{kepler}
+Keplersche Gesetze \url{https://de.wikipedia.org/wiki/Keplersche_Gesetze}, Stand 22.06.2021
+
+\end{thebibliography}
