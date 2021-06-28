@@ -21,11 +21,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Schlägt man eine Klaviersaite an, so verhält sie sich nach:
 
-\begin{equation}
+\begin{equation} \label{gl1}
       \frac{\partial^2\psi(x,t)}{\partial t^2} = c^2 \frac{\partial^2\psi(x,t)}{\partial x^2} - \frac{\gamma}{l}|\frac{\partial \psi (x,t)}{\partial t}|(\frac{\partial \psi (x,t)}{\partial t}).
 \end{equation}
 
+Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} um zu:
 
+\begin{equation}
+  \frac{\psi_{i+1, j} - 2\psi_{i,j} + \psi_{i-1,j}}{\Delta t^2} = c^2 \frac{\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}}{\Delta x^2} - \frac{\gamma}{l} |\frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta t}| \frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta t}
+\end{equation}
+
+Dies lässt sich umschreiben zu:
+
+\begin{equation}
+  \psi_{i+1,j} = \frac{\Delta t^2 c^2}{\Delta x^2} (\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}) + 2\psi_{i,j} - \psi_{i-1,j} - \frac{\gamma}{l} |\psi_{i,j}-\psi_{i-1,j}|(\psi_{i,j}-\psi_{i-1,j})
+\end{equation}
 
 # Runge-Kutta 2 Verfahren
 
@@ -35,105 +45,69 @@ merische Stabilität (soweit das System selbst stabil ist) und weist mit einem V
 
 ```{Rcpp}
 #include<Rcpp.h>
-#include<stdlib.h>
 #include<vector>
 #include<algorithm>
+#include<math.h>  
 
 using namespace Rcpp;
 
-// Wir verwenden Strukturen, um Funktionsargumente uebersichtlicher zu halten
-typedef struct
-{
-    double phi, r, theta, thetadot;
-} Status;
-
-typedef struct
-{
-    double epsilon,LM,ktheta;
-} Parameter;
-
-// Template zum Zerschneiden der verwendeten Vektoren
-template<typename T>
-std::vector<T> slice(std::vector<T> const &v, int m, int n)
-{
-    auto erste = v.cbegin() + m;
-    auto letzte = v.cbegin() + n + 1;
- 
-    std::vector<T> vektor(erste, letzte);
-    return vektor;
-}
-
-// Berechnungsschritt der Ableitungen nach dem DGS
-void f(Status alterStatus, Parameter parameter, Status& neuerStatus){
-
-  neuerStatus.r = parameter.LM*(1-parameter.epsilon*parameter.epsilon)
-    *parameter.epsilon*sin(alterStatus.phi)/(alterStatus.r*alterStatus.r
-    *(1+parameter.epsilon*cos(alterStatus.phi))*(1+parameter.epsilon
-    *cos(alterStatus.phi)));
-                                                                                                                                               
-    neuerStatus.phi = parameter.LM/(alterStatus.r*alterStatus.r);
-    
-    neuerStatus.theta = alterStatus.thetadot;
-    
-    neuerStatus.thetadot = parameter.ktheta*sin(2*(alterStatus.theta
-      -alterStatus.phi))/(alterStatus.r*alterStatus.r*alterStatus.r);
-    
-}
-
-// Ein Intergrationsschritt nach Runge-Kutta
-void rkSchritt(Status& status, Parameter parameter, double h){
-    Status fStatus;                 // Standart Ableitung
-    f(status, parameter, fStatus);
-    
-    Status f2Status;                // Mischterm Ableitung
-    Status gemischt = {.phi=status.phi+h*fStatus.phi,.r = status.r+h*fStatus.r,
-                       .theta = status.theta + h*fStatus.theta,
-                       .thetadot = status.thetadot + h*fStatus.thetadot};
-    
-    f(gemischt, parameter, f2Status);
-    status.phi = status.phi + h/2*(fStatus.phi + f2Status.phi);
-    status.r = status.r+ h/2*(fStatus.r + f2Status.r);
-    status.theta = status.theta + h/2*(fStatus.theta + f2Status.theta);
-    status.thetadot = status.thetadot+h/2*(fStatus.thetadot+f2Status.thetadot);
-    }
 
 //[[Rcpp::export]]
-Rcpp::List durchlauf(const int maxSchritte, const double h,
-                            const double phi, const double r, const double theta,
-                            const double thetadot,const double epsilon,
-                            const double LM, const double ktheta){
-  // Arrays der Werte zur späteren Ausgabe
-    std::vector<double> phiWerte(maxSchritte);
-    std::vector<double> rWerte(maxSchritte);
-    std::vector<double> thetaWerte(maxSchritte);
-    std::vector<double> thetadotWerte(maxSchritte);
-    int k = 0;
+std::vector<double> klaviersaite(const double l, const double roh, 
+                                              const double force, const double
+                                              gamma, const int xSchritte,
+                                              const double dt, const int 
+                                              zeitSchritte){
+  // Array der Werte zur späteren Ausgabe
+    std::vector<std::vector<double>> zeitvektor(zeitSchritte);
   // Quelltext
-  Status status = {.phi = phi, .r = r, .theta = theta,.thetadot = thetadot};
-  Parameter parameter = {.epsilon = epsilon,.LM = LM, .ktheta = ktheta};
-  // Schleife bis zur Abbruchsbedingung
-    for (int i = 0; i < maxSchritte; i++){
-      phiWerte[i] = status.phi;
-      rWerte[i] = status.r;
-      rkSchritt(status, parameter, h);
-      
-      // theta und thetadot Aufnahme nach jeder Umrundung
-      if(status.phi >= 2*3.14159*k){
-        k++;
-        thetaWerte[k] = status.theta;
-        thetadotWerte[k] = status.thetadot;
+    // Startwerte
+    std::vector<double> startwerte(xSchritte);
+    for (int i = 0; i<xSchritte; i++){
+      startwerte[i] = 0.0;
+    }
+    startwerte[(int)(0.26*(xSchritte-1))] = 0.01;
+    
+    zeitvektor[0] = startwerte;
+    zeitvektor[1] = startwerte;
+    
+    // Funktionsdurchläufe
+    double dx = l/(xSchritte - 1);
+    double c = 299792458;
+    double C = dt*dt*c*c/(dx*dx);
+    
+    for (int i = 2; i<zeitSchritte; i++){
+      std::vector<double> tVektor(xSchritte);
+      // Randbedingungen
+      tVektor[0] = 0;
+      tVektor[xSchritte-1] = 0;
+      for (int j = 1; j<xSchritte-1; j++){
+        tVektor[j] = C*(zeitvektor[i-1][j+1] - 2*zeitvektor[i-1][j] + 
+          zeitvektor[i-1][j-1]) + 2*zeitvektor[i-1][j] - zeitvektor[i-2][j] - 
+          gamma/l * fabs(zeitvektor[i-1][j]-zeitvektor[i-2][j]) *
+          (zeitvektor[i-1][j]-zeitvektor[i-2][j]);
       }
+      zeitvektor[i] = tVektor;
     }
     
   // Rückgabe für eine grafische Wiedergabe
-    return List::create(Named("phi") = phiWerte,Named("r") = rWerte,
-                        Named("theta") = slice(thetaWerte,1,k-1),
-                        Named("thetadot") = slice(thetadotWerte,1,k-1));
+    return zeitvektor[9];
 }
 
 ```
 
+```{r, echo=FALSE, fig.cap="\\label{fig:Zeitentwicklung} k)", fig.width=7,fig.height=4}
+l = 0.4
+roh = 0.006
+force = 743.4
+gamma = 1/3
+xSchritte = 100
+dt = 0.01
+zeitSchritte = 10
+datenMatrix = klaviersaite(l, roh, force, gamma, xSchritte, dt, zeitSchritte)
+plot(0:99,datenMatrix,"l")
 
+```
 
 # Fazit
 Wir erhalten bei den meisten Werten ein nicht chaotisches Verhalten zwischen $\theta$ und $\dot \theta$, können jedoch auch chaotische Situationen konstruieren. Dies ist im physikalischen Sinne auch nachvollziehbar, da die Eigenrotation des Mondes durch geschickt gewählte Bahnen stark von der Radiusvariation beeinflusst werden kann.
