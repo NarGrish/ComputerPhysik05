@@ -25,21 +25,25 @@ Schlägt man eine Klaviersaite an, so verhält sie sich nach:
       \frac{\partial^2\psi(x,t)}{\partial t^2} = c^2 \frac{\partial^2\psi(x,t)}{\partial x^2} - \frac{\gamma}{l}|\frac{\partial \psi (x,t)}{\partial t}|(\frac{\partial \psi (x,t)}{\partial t}).
 \end{equation}
 
-Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} um zu:
+Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} mit $\Xi = \frac{x}{l}, \phi = \frac{\psi}{l}, \tau = \frac{tc}{l}$ um zu einer Dimensionslosen Gleichung:
 
-\begin{equation}
-  \frac{\psi_{i+1, j} - 2\psi_{i,j} + \psi_{i-1,j}}{\Delta t^2} = c^2 \frac{\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}}{\Delta x^2} - \frac{\gamma}{l} |\frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta t}| \frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta t}
+\begin{equation}\label{gl2}
+      \frac{\partial^2\phi(\Xi,\tau)}{\partial \tau^2} = \frac{\partial^2\phi(\Xi,\tau)}{\partial \Xi^2} - \gamma|\frac{\partial \phi(\Xi,\tau)}{\partial \tau}|(\frac{\phi(\Xi,\tau)}{\partial \tau}).
 \end{equation}
 
-Dies lässt sich umschreiben zu:
+Um dieses Problem analytisch angehen zu können, müssen wir die Differentiale annähern und schreiben hierzu die Gleichung \ref{gl2} um zu:
 
 \begin{equation}
-  \psi_{i+1,j} = \frac{\Delta t^2 c^2}{\Delta x^2} (\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}) + 2\psi_{i,j} - \psi_{i-1,j} - \frac{\gamma}{l} |\psi_{i,j}-\psi_{i-1,j}|(\psi_{i,j}-\psi_{i-1,j})
+  \frac{\psi_{i+1, j} - 2\psi_{i,j} + \psi_{i-1,j}}{\Delta \tau^2} =  \frac{\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}}{\Delta \Xi^2} - \gamma |\frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta \tau}| \frac{\psi_{i,j}-\psi_{i-1,j}}{\Delta \tau}
 \end{equation}
 
-# Runge-Kutta 2 Verfahren
+Dies lässt sich weiter umstellen zu:
 
-merische Stabilität (soweit das System selbst stabil ist) und weist mit einem Verfahrensfehler von $\mathcal{O}(h^2)$ einen kleineren Fehler als das Eulerverfahren auf für kleine Schrittweiten h.
+\begin{equation}
+  \psi_{i+1,j} = \frac{\Delta \tau^2}{\Delta \Xi^2} (\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}) + 2\psi_{i,j} - \psi_{i-1,j} - \gamma |\psi_{i,j}-\psi_{i-1,j}|(\psi_{i,j}-\psi_{i-1,j})
+\end{equation}
+
+Diese Gleichung wird nun verwendet um iterativ den nächsten Funktionswert an jedem Ort zu bestimmen. Als Randbedingung werden die Ränder, also $\Xi = 0$ und $\Xi = Xi_{max}$ auf 0 gesetzt, da sie im Klavier befestigt sind.
 
 # Implementation des DGS nach dem Runge-Kutta 2 Verfahren
 
