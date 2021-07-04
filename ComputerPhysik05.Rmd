@@ -127,7 +127,7 @@ for (x in schritte){
   schritte[x] = sum(datenMatrixStabil[x,])
 }
 
-plot(1:200, schritte, "l", ylim=c(0, 0.05))
+plot(1:200, schritte, "l", ylim=c(0, 0.05),xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi_{Summe}$)'))
 ```
 
 Wie wir sehen können, bleibt die Amplitudensumme über dem betrachten Bereich sehr konstant und wir können die Methode im folgenden auf ein gedämpftes System anwenden.
@@ -136,7 +136,7 @@ Wie wir sehen können, bleibt die Amplitudensumme über dem betrachten Bereich s
 
 Wir wollen eine Klaviersaite schwingen lassen und auf seine Obertöne und den Grundton untersuchen. Betrachten wir in einer ersten Simulation die räumliche Schwingung zu verschiedenen Zeiten so können wir in Abb. \ref{fig:Zeitentwicklung} sehen wie sich die Schwingung ausbreitet ($\Delta \Xi = 2 \cdot 10^{-3}$ und $\Delta \tau = 10^-3$ ).
 
-```{r, echo=FALSE, fig.cap="\\label{fig:raum} Räumlicher verlauf", fig.width=7,fig.height=4}
+```{r, echo=FALSE, fig.cap="\\label{fig:raum} Räumlicher Verlauf", fig.width=7,fig.height=4}
 library(latex2exp)
 xSchritte = 500
 dt = 0.001
@@ -168,7 +168,7 @@ plot((1:10000)*0.0001, datenMatrix3[c(1:10000),0.3*xSchritte],"l" ,xlab = TeX(r'
 
 # Fast Fourier Transform
 
-Mit dem Ziel die Schwingung in ihre Frequenzen aufzuteilen, werden wir die Werte der zeitlichen Entwicklung Fourier transformieren. Diese Transformation zerlegt eine reele Funktion in eine Summe von gewichteten Cosinusfunktionen. Wir werden den Fast Fourier Transform-Algorithmus verwenden, da wir mit diskreten Werten arbeiten. Die $n$ erhaltenen Werte entsprechen anschließend den Gewichtungen der Cosini in aufsteigender Wertigkeit, also:
+Mit dem Ziel die Schwingung in ihre Frequenzen aufzuteilen, werden wir die Werte der zeitlichen Entwicklung Fourier transformieren. Diese Transformation zerlegt eine reele Funktion in eine Summe von gewichteten Cosinusfunktionen. Wir werden den Fast Fourier Transform-Algorithmus verwenden, da wir mit diskreten Werten arbeiten. Die $n$ erhaltenen Werte entsprechen anschließend den Gewichtungen der Cosinus in aufsteigender Wertigkeit, also:
 
 \begin{equation}
   \mathrm{T}_f(x) = \frac{1}{\sqrt{2\pi}} \sum_k=1^n g_k \mathrm{cos}(kx)
@@ -259,11 +259,14 @@ ff1 = fft2( datenMatrix3[c(5000:9095),400],12)
 plot(1:2^12, ff1,"l")
 
 for (x in 1:5){
-  datenMatrix3 = klaviersaite2(gamma, xSchritte, dt, zeitSchritte)
   ff1 = fft2( datenMatrix3[c(5000:9095),x*100],12)
+  lines(1:2^12, ff1,"l", col = rainbow(5)[x])
+  ff1 = fft2( datenMatrix3[c(5000:9095),x*100-50],12)
   lines(1:2^12, ff1,"l", col = rainbow(5)[x])
 }
 ```
+
+Wir können in Abb. \ref{fig:fft} Ansammlungen von Frequenzen, welche dem Grundton bis hoch zum 5ten Oberton entsprechen, auslesen. 
 
 # Fazit
 Wir erhalten bei den meisten Werten ein nicht chaotisches Verhalten zwischen $\theta$ und $\dot \theta$, können jedoch auch chaotische Situationen konstruieren. Dies ist im physikalischen Sinne auch nachvollziehbar, da die Eigenrotation des Mondes durch geschickt gewählte Bahnen stark von der Radiusvariation beeinflusst werden kann.
