@@ -155,7 +155,7 @@ Wir wollen im folgenden mit möglichst kleinen Diskretisierungslängen arbeiten,
 
 ## Zeitlicher Verlauf
 
-Für die ganauere Untersuchung benötigen die zeitliche Entwicklung an einem Ort. Wir haben in Abb. \ref{fig:zeit} den Verlauf an der Stelle $\Xi = 0,3$ gewählt und für die verschiedenen Zeiten aufgetragen. Die Kurve beginnt in der Ruhelage bis das erste Hochpunkt den Ort erreicht. Es lässt sich nun eine exponentiell abfallende Sinuskurve beobachten, bis die am Rand reflektierte Welle den Punkt erreicht. Die verbleibende Überlagerung stabilisiert sich zu einer annähernd gleichmässigen Schwebung. Dies es im folgenden zu untersuchen gilt.
+Für die ganauere Untersuchung benötigen die zeitliche Entwicklung an einem Ort. Wir haben in Abb. \ref{fig:zeit} den Verlauf an der Stelle $\Xi = 0,3$ gewählt und für die verschiedenen Zeiten aufgetragen. Die Kurve beginnt in der Ruhelage bis das erste Hochpunkt den Ort erreicht. Es lässt sich nun eine exponentiell abfallende Sinuskurve beobachten, bis die am Rand reflektierte Welle den Punkt erreicht. Die verbleibende Überlagerung stabilisiert sich zu einer annähernd gleichmässigen Schwebung. Diese gilt es im Folgenden zu untersuchen.
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:zeit} Zeitliche Entwicklung", fig.width=7,fig.height=4}
 library(latex2exp)
@@ -277,12 +277,12 @@ Wir können in Abb. \ref{fig:fft} Ansammlungen von Frequenzen, welche dem Grundt
             \begin{tabular}{c|c}
                 Ton & $f$   \\
                 \hline
-                Grundton & 5 $\pm 5$ \\
-                1. Oberton & 10 $\pm 5$  \\ 
-                2. Oberton & 20 $\pm 10$ \\
-                3. Oberton & 45 $\pm 10$  \\
-                4. Oberton & 88 $\pm 10$  \\
-                5. Oberton & 175 $\pm 10$  \\
+                Grundton & 5 $\pm 5$ Hz \\
+                1. Oberton & 10 $\pm 5$ Hz \\ 
+                2. Oberton & 20 $\pm 10$ Hz \\
+                3. Oberton & 45 $\pm 10$ Hz  \\
+                4. Oberton & 88 $\pm 10$ Hz \\
+                5. Oberton & 175 $\pm 10$ Hz 
             \end{tabular}
             \caption{Frequenzen der Töne}
             \label{tab:frequenzen}
@@ -300,25 +300,25 @@ arrows(n,y-dy,n,y+dy,length=0.05, angle = 90, code = 3 )
 lines(x, 4.118*x^2,'l')
 ```
 
-Wir sehen, dass die Frequenzen der Obertöne nicht wie erwartet nach der Gl. \ref{oberton} linear steigen, sondern in Näherung quadratisch  Abb. \ref{fig:obertonfrequenz}.
-Diese Verteilung der Frequenzen für die Töne konnte durch einen möglichen Fehler beim bestimmen der Frequenzen entstanden sein, bei dem die fehlenden Vielfache des Grundtons verschwunden sind. Wir haben keinen physikalischen Grund gefunden der diese Verteilung erklärt, die Dämpfung die ein Störfaktor sein könnte beeinflusst zwar die einzelnen Schwingdauern der im Bezug auf den Fall ohne Dämpfung, jedoch sollten die Frequenzen da zueinander dadurch nicht stark beeinflust werden. Zumindest sollte kein quadratischer zusammenhang entstehen. 
+Wir sehen, dass die Frequenzen der Obertöne nicht wie erwartet nach der Gl. \ref{oberton} linear steigen, sondern in Näherung quadratisch (Abb. \ref{fig:obertonfrequenz}).
+Diese Verteilung der Frequenzen für die Töne könnte durch einen möglichen Fehler beim bestimmen der Frequenzen entstanden sein, bei diesem die fehlenden Vielfache des Grundtons verschwunden sind. Wir haben keinen physikalischen Grund gefunden, der diese Verteilung erklärt. Die Dämpfung, die ein Störfaktor sein könnte, beeinflusst zwar die einzelnen Schwingdauern der im Bezug auf den Fall ohne Dämpfung, jedoch sollten die Frequenzen da zueinander dadurch nicht stark beeinflust werden. Zumindest sollte unseres Verständnis nach kein quadratischer Zusammenhang entstehen. 
 
 \begin{equation} \label{oberton}
-  f_n = \frac{1}{2l} \sqrt{\frac{F}{\roh}}n.
+  f_n = \frac{1}{2l} \sqrt{\frac{F}{\rho}}n.
 \end{equation}
 
-Die dazu angenommene konstante Dämpfung sollte sich mit dem folgenden zusammenhang auf die Frequenz auswirken:
+Die dazu angenommene konstante Dämpfung sollte sich mit dem folgenden Zusammenhang auf die Frequenz auswirken:
 \begin{equation} \label{oberton}
   2\pi f = \sqrt{4\pi^2f_0^2-\delta^2}.
 \end{equation}
 wobei $f_0$ die Frequenz ohne Dämpfung und $\delta$ den Dämpfungsfaktor beschreiben, nach der Lösung für eine gedämpfen harmonische Schwingung \cite{demtroeder}.
-An der korregierten Frequenz für die sich bildenen Schwingungen ist zu sehen, das zwar mit zunehmender Frequenz auch der abstand zwichen den Frequenzen steigen muss, da die Dämpfung zunehmend kleineren einfluss auf die Freqeunz hat. 
-Dieser zusammenhang reicht jedoch nicht aus den in Abb. \ref{fig:obertonfrequenz} gefundenen Zusammenhang der Frequenzen zu erklären.
+An der korregierten Frequenz für die sich bildenen Schwingungen ist zu sehen, dass zumindest mit zunehmender Frequenz auch der Abstand zwischen den Frequenzen steigen muss, da die Dämpfung zunehmend kleineren Einfluss auf die Freqeunz hat. 
+Dieser Zusammenhang reicht jedoch nicht aus, den in Abb. \ref{fig:obertonfrequenz} gefundenen Zusammenhang der Frequenzen zu erklären.
 
 
 # Fazit
-Durch das Umformen der DGL zur Gleichung \ref{Punktformel} ließ sich der Zeitliche Schwingungsverlauf Örtlich bestimmen.
-Die dadurch erhaltene nummerische Lösung konnten wir darufhin nach den Einschingen über die FFT in die zugehörigen Frequenzen des Grundtons und der ersten 5 Obertöne zerlegen. Die dabei bestimmten Frequenz sind mit 5 Hz für den Grundton und 175 Hz für den 5ten Oberton recht klein, was ein skalierungs Fehler erahnen lässt, jedoch konnten wir diesen nicht finden. Es ist auch auffallend, dass die Frequenzen vom Grundton an in Näherung quadratische Zunehmen, dies kann durch eine konstante Dämpfung nicht erklärt werden. Somit müsste es an der gewählent nicht linearen Dämpfung des DGLs liegen und oder an einem möglichen Feheler beim Lösungsverfahren des Problems.
+Durch das Umformen der DGL zur Gleichung \ref{Punktformel} ließ sich der zeitliche Schwingungsverlauf örtlich bestimmen.
+Die dadurch erhaltene nummerische Lösung konnten wir daraufhin nach dem Einschwingen über die FFT in die zugehörigen Frequenzen des Grundtons und der ersten 5 Obertöne zerlegen. Die dabei bestimmten Frequenz sind mit 5 Hz für den Grundton und 175 Hz für den 5ten Oberton recht klein, was ein skalierungs Fehler erahnen lässt. Jedoch konnten wir diesen nicht finden. Es ist auch auffallend, dass die Frequenzen vom Grundton in Näherung quadratische zunehmen. Dies kann durch eine konstante Dämpfung nicht erklärt werden. Somit müsste es an der gewählten nicht linearen Dämpfung des DGLs liegen und/oder an einem möglichen Feheler beim Lösungsverfahren des Problems.
 
 
 \begin{thebibliography}{99}
