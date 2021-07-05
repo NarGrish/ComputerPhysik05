@@ -1,7 +1,7 @@
 ---
 title: 'Übung 05: Spektrum einer Klaviersaite'
 author: "Tobias Blesgen und Leonardo Thome"
-date: "27.06.2021"
+date: "07.07.2021"
 output:
   pdf_document: default
   html_document:
@@ -25,10 +25,10 @@ Schlägt man eine Klaviersaite an, so verhält sie sich nach:
       \frac{\partial^2\psi(x,t)}{\partial t^2} = c^2 \frac{\partial^2\psi(x,t)}{\partial x^2} - \frac{\gamma}{l}|\frac{\partial \psi (x,t)}{\partial t}|(\frac{\partial \psi (x,t)}{\partial t}).
 \end{equation}
 
-Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} mit $\Xi = \frac{x}{l}, \phi = \frac{\psi}{l}, \tau = \frac{tc}{l}$ um zu einer Dimensionslosen Gleichung:
+Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} mit $\Xi = \frac{x}{l}, \phi = \frac{\psi}{l}, \tau = \frac{tc}{l}$ um zu der dimensionslosen Gleichung:
 
 \begin{equation}\label{gl2}
-      \frac{\partial^2\phi(\Xi,\tau)}{\partial \tau^2} = \frac{\partial^2\phi(\Xi,\tau)}{\partial \Xi^2} - \gamma|\frac{\partial \phi(\Xi,\tau)}{\partial \tau}|(\frac{\phi(\Xi,\tau)}{\partial \tau}).
+      \frac{\partial^2\phi(\Xi,\tau)}{\partial \tau^2} = \frac{\partial^2\phi(\Xi,\tau)}{\partial \Xi^2} - \gamma|\frac{\partial \phi(\Xi,\tau)}{\partial \tau}|(\frac{\partial \phi(\Xi,\tau)}{\partial \tau}).
 \end{equation}
 
 Um dieses Problem analytisch angehen zu können, müssen wir die Differentiale nähern und schreiben hierzu die Gleichung \ref{gl2} um zu:
@@ -39,15 +39,15 @@ Um dieses Problem analytisch angehen zu können, müssen wir die Differentiale n
 
 Dies lässt sich weiter umstellen zu:
 
-\begin{equation}
+\begin{equation}\label{Punktformel}
   \psi_{i+1,j} = \frac{\Delta \tau^2}{\Delta \Xi^2} (\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}) + 2\psi_{i,j} - \psi_{i-1,j} - \gamma |\psi_{i,j}-\psi_{i-1,j}|(\psi_{i,j}-\psi_{i-1,j})
 \end{equation}
 
-Diese Gleichung wird nun verwendet, um iterativ den nächsten Funktionswert an jedem Ort zu bestimmen. Als Randbedingung werden die Ränder, also $\Xi = 0$ und $\Xi = \Xi_{max}$ auf 0 gesetzt, da sie im Klavier befestigt sind.
+Diese Gleichung wird nun verwendet, um iterativ den nächsten Funktionswert an jedem Ort zu bestimmen. Als Randbedingung werden die Ränder also $\Xi = 0$ und $\Xi = \Xi_{max}$ auf 0 gesetzt, da sie im Klavier befestigt sind.
 
 # Implementation des numerischen Verfahrens
 
-Nach der Courant-Friedrichs-Lewy Stabilitätsbedingung müssen wir bei der Schrittweite Wahl beachten, dass stets
+Nach der Courant-Friedrichs-Lewy Stabilitätsbedingung müssen wir bei der Schrittweitenwahl beachten, dass stets
 
 \begin{equation}
   1 \geq c\frac{\Delta t}{ \Delta x}
@@ -131,28 +131,11 @@ for (x in schritte){
 plot(1:200, schritte, "l", ylim=c(0, 0.05),xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi_{Summe}$)'))
 ```
 
-```{r, echo=FALSE, fig.cap="\\label{fig:stabilitaet} Stabilität bei keiner Abschwächung", fig.width=7,fig.height=4}
-library(latex2exp)
-xSchritte = 500
-dt = 0.0001
-zeitSchritte = 10000
-gamma = 0
-datenMatrixStabil = klaviersaite2(gamma, xSchritte, dt, zeitSchritte)
-schritte = 1:10000
-
-for (x in schritte){
-  schritte[x] = sum(datenMatrixStabil[x,])
-}
-
-plot(1:10000, schritte, "l", ylim=c(0, 0.05),xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi_{Summe}$)'))
-```
-
-
 Wie wir sehen können, bleibt die Amplitudensumme über dem betrachten Bereich sehr konstant und wir können die Methode im folgenden auf ein gedämpftes System anwenden.
 
 ## Anwendung
 
-Wir wollen eine Klaviersaite schwingen lassen und auf seine Obertöne und den Grundton untersuchen. Betrachten wir in einer ersten Simulation die räumliche Schwingung zu verschiedenen Zeiten so können wir in Abb. \ref{fig:Zeitentwicklung} sehen wie sich die Schwingung ausbreitet ($\Delta \Xi = 2 \cdot 10^{-3}$ und $\Delta \tau = 10^-3$ ).
+Wir wollen eine Klaviersaite schwingen lassen und auf seine Obertöne und den Grundton untersuchen. Betrachten wir in einer ersten Simulation die räumliche Schwingung zu verschiedenen Zeiten so können wir in Abb. \ref{fig:raum} sehen wie sich die Schwingung ausbreitet ($\Delta \Xi = 2 \cdot 10^{-3}$ und $\Delta \tau = 10^{-3}$ ).
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:raum} Räumlicher Verlauf", fig.width=7,fig.height=4}
 library(latex2exp)
@@ -168,11 +151,11 @@ for (x in 1:5){
 
 ```
 
-Wir wollen im folgenden mit möglichst kleinen Diskretisierungslängen arbeiten, ohne die Rechenzeiten extrem in die Länge zu ziehen und haben uns für $\Delta \tau = 10^-{4}$ und $\Delta \Xi = \frac{4}{3}\cdot 10^{-3}$ entschieden. Diese Längen halten auch die geforderte Bedingung Gl. \ref{stabi} ein.
+Wir wollen im folgenden mit möglichst kleinen Diskretisierungslängen arbeiten, ohne die Rechenzeiten extrem in die Länge zu ziehen und haben uns für $\Delta \tau = 10^{-4}$ und $\Delta \Xi = \frac{4}{3}\cdot 10^{-3}$ entschieden. Diese Längen halten auch die geforderte Bedingung Gl. \ref{stabi} ein.
 
 ## Zeitlicher Verlauf
 
-Für die ganauere Untersuchung benötigen die zeitliche Entwicklung an einem Ort. Wir haben in Abb. \ref{fig:zeit} den Verlauf an der Stelle $\Xi = 0,3$ gewählt und für die verschiedenen Zeiten aufgetragen. Die Kurve beginnt in der Ruhelage bis das erste Hochpunkt den Ort erreicht. Es lässt sich nun eine exponentiell abfallende Sinuskurve beobachten, bis die am Rand reflektierte Welle den Punkt erreicht. Die verbleibende Überlagerung stabilisiert sich zu einer annähernd gleichmässigen Schwebung.
+Für die ganauere Untersuchung benötigen die zeitliche Entwicklung an einem Ort. Wir haben in Abb. \ref{fig:zeit} den Verlauf an der Stelle $\Xi = 0,3$ gewählt und für die verschiedenen Zeiten aufgetragen. Die Kurve beginnt in der Ruhelage bis das erste Hochpunkt den Ort erreicht. Es lässt sich nun eine exponentiell abfallende Sinuskurve beobachten, bis die am Rand reflektierte Welle den Punkt erreicht. Die verbleibende Überlagerung stabilisiert sich zu einer annähernd gleichmässigen Schwebung. Dies es im folgenden zu untersuchen gilt.
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:zeit} Zeitliche Entwicklung", fig.width=7,fig.height=4}
 library(latex2exp)
@@ -181,7 +164,7 @@ dt = 0.0001
 zeitSchritte = 10000
 gamma = 1/3
 datenMatrix3 = klaviersaite2(gamma, xSchritte, dt, zeitSchritte)
-plot((1:10000)*0.0001, datenMatrix3[c(1:10000),0.3*xSchritte],"l" ,xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi$)'))
+plot((1:10000)*dt, datenMatrix3[c(1:10000),0.3*xSchritte],"l" ,xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi$)'))
 ```
 
 # Fast Fourier Transform
@@ -189,7 +172,7 @@ plot((1:10000)*0.0001, datenMatrix3[c(1:10000),0.3*xSchritte],"l" ,xlab = TeX(r'
 Mit dem Ziel die Schwingung in ihre Frequenzen aufzuteilen, werden wir die Werte der zeitlichen Entwicklung Fourier transformieren. Diese Transformation zerlegt eine reele Funktion in eine Summe von gewichteten Cosinusfunktionen. Wir werden den Fast Fourier Transform-Algorithmus verwenden, da wir mit diskreten Werten arbeiten. Die $n$ erhaltenen Werte entsprechen anschließend den Gewichtungen der Cosinus in aufsteigender Wertigkeit, also:
 
 \begin{equation}
-  \mathrm{T}_f(x) = \frac{1}{\sqrt{2\pi}} \sum_k=1^n g_k \mathrm{cos}(kx)
+  \mathrm{T}_f(x) = \frac{1}{\sqrt{2\pi}} \sum_{k=1}^n g_k \mathrm{cos}(kx)
 \end{equation}
 
 ```{Rcpp}
@@ -270,14 +253,14 @@ Zerlegen wir nun verschiedene Orte nach der Fouriertransformation, so erhalten w
 ```{r, echo=FALSE, fig.cap="\\label{fig:fft} Fourier zerlegtes Spektrum", fig.width=7,fig.height=4}
 xSchritte = 500
 dt = 0.0001
-zeitSchritte = 10000
+zeitSchritte = 20000
 gamma = 1/3
 c = 0.5* sqrt(743.4/0.006)
 l = 0.4
 n = 12
 datenMatrix3 = klaviersaite2(gamma, xSchritte, dt, zeitSchritte)
 ff1 = fft2( datenMatrix3[c(5000:9095),400],12)
-plot((1:2^12)*dt*c/l, ff1,"l",xlab = TeX(r'($f_{\tau}$)'), ylab = TeX(r'($\g_i$)'))
+plot((1:2^12)*dt*c/l,ylim =c(-0.005,0.005) , ff1,"l",xlab = TeX(r'($f$)'), ylab = TeX(r'($\g_i$)'))
 
 for (x in 1:5){
   ff1 = fft2( datenMatrix3[c(5000:9095),x*100],12)
@@ -285,33 +268,61 @@ for (x in 1:5){
   ff1 = fft2( datenMatrix3[c(5000:9095),x*100-50],12)
   lines((1:2^12)*dt*c/l, ff1,"l", col = rainbow(5)[x])
 }
+
 ```
 
 Wir können in Abb. \ref{fig:fft} Ansammlungen von Frequenzen, welche dem Grundton bis hoch zum 5ten Oberton entsprechen, auslesen:
         \begin{table}[!h]
             \centering
-            \begin{tabular}{c|c|c}
-                Ton & $f_{\tau}$ & $f$  \\
+            \begin{tabular}{c|c}
+                Ton & $f$   \\
                 \hline
-                Grundton & 0,01 & \\
-                1. Oberton & 0,02 & \\ 
-                2. Oberton & 0,05 & \\
-                3. Oberton & 0,1 & \\
-                4. Oberton & 0,2 & \\
-                5. Oberton & 0,4 & \\
+                Grundton & 5 $\pm 5$ \\
+                1. Oberton & 10 $\pm 5$  \\ 
+                2. Oberton & 20 $\pm 10$ \\
+                3. Oberton & 45 $\pm 10$  \\
+                4. Oberton & 88 $\pm 10$  \\
+                5. Oberton & 175 $\pm 10$  \\
             \end{tabular}
-            \caption{Wahrheitswerttabelle des Volladdierers}
-            \label{tab:wahrheit4}
+            \caption{Frequenzen der Töne}
+            \label{tab:frequenzen}
         \end{table}
+        
+        
+```{r, echo=FALSE, fig.cap="\\label{fig:obertonfrequenz} Plot der Frequenzen für den Grunton/Obertöne ", fig.width=7,fig.height=4}
+
+x = c(1:600)/100
+y = c(5,10,20,45,88,175)
+dy = c(5,5,10,10,10,10)
+
+plot(c(1:6), y, pch = 19, xlab = 'n')
+arrows(n,y-dy,n,y+dy,length=0.05, angle = 90, code = 3 )
+lines(x, 4.118*x^2,'l')
+```
+
+Wir sehen, dass die Frequenzen der Obertöne nicht wie erwartet nach der Gl. \ref{oberton} linear steigen, sondern in Näherung quadratisch  Abb. \ref{fig:obertonfrequenz}.
+Diese Verteilung der Frequenzen für die Töne konnte durch einen möglichen Fehler beim bestimmen der Frequenzen entstanden sein, bei dem die fehlenden Vielfache des Grundtons verschwunden sind. Wir haben keinen physikalischen Grund gefunden der diese Verteilung erklärt, die Dämpfung die ein Störfaktor sein könnte beeinflusst zwar die einzelnen Schwingdauern der im Bezug auf den Fall ohne Dämpfung, jedoch sollten die Frequenzen da zueinander dadurch nicht stark beeinflust werden. Zumindest sollte kein quadratischer zusammenhang entstehen. 
+
+\begin{equation} \label{oberton}
+  f_n = \frac{1}{2l} \sqrt{\frac{F}{\roh}}n.
+\end{equation}
+
+Die dazu angenommene konstante Dämpfung sollte sich mit dem folgenden zusammenhang auf die Frequenz auswirken:
+\begin{equation} \label{oberton}
+  2\pi f = \sqrt{4\pi^2f_0^2-\delta^2}.
+\end{equation}
+wobei $f_0$ die Frequenz ohne Dämpfung und $\delta$ den Dämpfungsfaktor beschreiben, nach der Lösung für eine gedämpfen harmonische Schwingung \cite{demtroeder}.
+An der korregierten Frequenz für die sich bildenen Schwingungen ist zu sehen, das zwar mit zunehmender Frequenz auch der abstand zwichen den Frequenzen steigen muss, da die Dämpfung zunehmend kleineren einfluss auf die Freqeunz hat. 
+Dieser zusammenhang reicht jedoch nicht aus den in Abb. \ref{fig:obertonfrequenz} gefundenen Zusammenhang der Frequenzen zu erklären.
 
 
 # Fazit
-Wir erhalten bei den meisten Werten ein nicht chaotisches Verhalten zwischen $\theta$ und $\dot \theta$, können jedoch auch chaotische Situationen konstruieren. Dies ist im physikalischen Sinne auch nachvollziehbar, da die Eigenrotation des Mondes durch geschickt gewählte Bahnen stark von der Radiusvariation beeinflusst werden kann.
-
-Wir können aber sehen, dass dieses Verhalten nicht immer eintritt und wir im Allgemeinen ein strukturiertes Verhalten vorfinden.
+Durch das Umformen der DGL zur Gleichung \ref{Punktformel} ließ sich der Zeitliche Schwingungsverlauf Örtlich bestimmen.
+Die dadurch erhaltene nummerische Lösung konnten wir darufhin nach den Einschingen über die FFT in die zugehörigen Frequenzen des Grundtons und der ersten 5 Obertöne zerlegen. Die dabei bestimmten Frequenz sind mit 5 Hz für den Grundton und 175 Hz für den 5ten Oberton recht klein, was ein skalierungs Fehler erahnen lässt, jedoch konnten wir diesen nicht finden. Es ist auch auffallend, dass die Frequenzen vom Grundton an in Näherung quadratische Zunehmen, dies kann durch eine konstante Dämpfung nicht erklärt werden. Somit müsste es an der gewählent nicht linearen Dämpfung des DGLs liegen und oder an einem möglichen Feheler beim Lösungsverfahren des Problems.
 
 
 \begin{thebibliography}{99}
-
+\bibitem{demtroeder} 
+Wolfgang Demtröder, \textit{Experimentalphysik 1, Mechanik und Wärme},SpringerSpektrum, Auflage 8, 2018, Seite 334.
 
 \end{thebibliography}
