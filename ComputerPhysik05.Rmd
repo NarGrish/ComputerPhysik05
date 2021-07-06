@@ -25,7 +25,7 @@ Schlägt man eine Klaviersaite an, so verhält sie sich nach:
       \frac{\partial^2\psi(x,t)}{\partial t^2} = c^2 \frac{\partial^2\psi(x,t)}{\partial x^2} - \frac{\gamma}{l}|\frac{\partial \psi (x,t)}{\partial t}|(\frac{\partial \psi (x,t)}{\partial t}).
 \end{equation}
 
-Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir Gleichung \ref{gl1} mit $\Xi = \frac{x}{l}, \phi = \frac{\psi}{l}, \tau = \frac{tc}{l}$ um zu der dimensionslosen Gleichung:
+Wir wollen dieses Verhalten im Folgenden numerisch untersuchen. Hierzu schreiben wir die Gleichung \ref{gl1} mit $\Xi = \frac{x}{l}, \phi = \frac{\psi}{l}, \tau = \frac{tc}{l}$ um zu der dimensionslosen Gleichung:
 
 \begin{equation}\label{gl2}
       \frac{\partial^2\phi(\Xi,\tau)}{\partial \tau^2} = \frac{\partial^2\phi(\Xi,\tau)}{\partial \Xi^2} - \gamma|\frac{\partial \phi(\Xi,\tau)}{\partial \tau}|(\frac{\partial \phi(\Xi,\tau)}{\partial \tau}).
@@ -43,7 +43,7 @@ Dies lässt sich weiter umstellen zu:
   \psi_{i+1,j} = \frac{\Delta \tau^2}{\Delta \Xi^2} (\psi_{i,j+1} - 2\psi_{i,j} + \psi_{i,j-1}) + 2\psi_{i,j} - \psi_{i-1,j} - \gamma |\psi_{i,j}-\psi_{i-1,j}|(\psi_{i,j}-\psi_{i-1,j})
 \end{equation}
 
-Diese Gleichung wird nun verwendet, um iterativ den nächsten Funktionswert an jedem Ort zu bestimmen. Als Randbedingung werden die Ränder also $\Xi = 0$ und $\Xi = \Xi_{max}$ auf 0 gesetzt, da sie im Klavier befestigt sind.
+Diese Gleichung wird nun verwendet, um iterativ den nächsten Funktionswert an jedem Ort zu bestimmen. Als Randbedingung werden die Ränder $\Xi = 0$ und $\Xi = \Xi_{max}$ auf 0 gesetzt, da sie im Klavier befestigt sind.
 
 # Implementation des numerischen Verfahrens
 
@@ -53,13 +53,13 @@ Nach der Courant-Friedrichs-Lewy Stabilitätsbedingung müssen wir bei der Schri
   1 \geq c\frac{\Delta t}{ \Delta x}
 \end{equation}
 
-gilt. Setzen wir $\Xi$ und $\tau$ ein, so erhalten wir nach einmaligen Umstellen die Ungleichung
+gilt. Setzen wir $\Xi$ und $\tau$ ein, so erhalten wir nach einmaligem Umstellen die Ungleichung
 
 \begin{equation} \label{stabi}
   \Delta \Xi \geq \frac{cl}{cl}\Delta \tau = \Delta \tau.
 \end{equation}
 
-Wir müssen also darauf achten die $\tau$-Schritte kleiner als die $\Xi$-Schritte zu halten.
+Wir müssen also darauf achten, die $\tau$-Schritte kleiner als die $\Xi$-Schritte zu halten.
 
 ```{Rcpp}
 #include<Rcpp.h>
@@ -113,7 +113,7 @@ NumericMatrix klaviersaite2(const double gamma, const int xSchritte,
 
 ## Stabilitätsüberprüfung
 
-Wir wollen am Beispiel des $\gamma = 0$ Falls überprüfen ob unsere Methodik stabil ist. Wir würden erwarten dass die mittlere Amplitude über die Zeit konstant bleibt und tragen hierzu die Summe aller Funktionspunkte grafisch gegen die Zeit auf:
+Wir wollen am Beispiel des $\gamma = 0$ Falls überprüfen, ob unsere Methodik stabil ist. Wir würden erwarten, dass die mittlere Amplitude über die Zeit konstant bleibt, und tragen hierzu die Summe aller Funktionspunkte grafisch gegen die Zeit auf:
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:stabilitaet} Stabilität bei keiner Abschwächung", fig.width=7,fig.height=4}
 library(latex2exp)
@@ -131,11 +131,11 @@ for (x in schritte){
 plot(1:200, schritte, "l", ylim=c(0, 0.05),xlab = TeX(r'($\tau$)'), ylab = TeX(r'($\psi_{Summe}$)'))
 ```
 
-Wie wir sehen können, bleibt die Amplitudensumme über dem betrachten Bereich sehr konstant und wir können die Methode im folgenden auf ein gedämpftes System anwenden.
+Wie wir sehen können, bleibt die Amplitudensumme über dem betrachteten Bereich sehr konstant und wir können die Methode im Folgenden auf ein gedämpftes System anwenden.
 
 ## Anwendung
 
-Wir wollen eine Klaviersaite schwingen lassen und auf seine Obertöne und den Grundton untersuchen. Betrachten wir in einer ersten Simulation die räumliche Schwingung zu verschiedenen Zeiten so können wir in Abb. \ref{fig:raum} sehen wie sich die Schwingung ausbreitet ($\Delta \Xi = 2 \cdot 10^{-3}$ und $\Delta \tau = 10^{-3}$ ).
+Wir wollen eine Klaviersaite schwingen lassen und auf ihre Obertöne und den Grundton untersuchen. Betrachten wir in einer ersten Simulation die räumliche Schwingung zu verschiedenen Zeiten, so können wir in Abb. \ref{fig:raum} sehen, wie sich die Schwingung ausbreitet ($\Delta \Xi = 2 \cdot 10^{-3}$ und $\Delta \tau = 10^{-3}$ ).
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:raum} Räumlicher Verlauf", fig.width=7,fig.height=4}
 library(latex2exp)
@@ -151,7 +151,7 @@ for (x in 1:5){
 
 ```
 
-Wir wollen im folgenden mit möglichst kleinen Diskretisierungslängen arbeiten, ohne die Rechenzeiten extrem in die Länge zu ziehen und haben uns für $\Delta \tau = 10^{-4}$ und $\Delta \Xi = \frac{4}{3}\cdot 10^{-3}$ entschieden. Diese Längen halten auch die geforderte Bedingung Gl. \ref{stabi} ein.
+Wir wollen im Folgenden mit möglichst kleinen Diskretisierungslängen arbeiten, ohne die Rechenzeiten extrem in die Länge zu ziehen, und haben uns für $\Delta \tau = 10^{-4}$ und $\Delta \Xi = \frac{4}{3}\cdot 10^{-3}$ entschieden. Diese Längen halten auch die geforderte Bedingung Gl. \ref{stabi} ein.
 
 ## Zeitlicher Verlauf
 
